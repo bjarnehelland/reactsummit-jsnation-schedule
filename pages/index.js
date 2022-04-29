@@ -1,12 +1,10 @@
 import Head from "next/head";
-import Image from "next/image";
 import { getSchedule } from "../data/schedule";
 import styles from "../styles/Home.module.css";
 
-function getDate(isoDate) {
-  const date = new Date(isoDate);
-  return date.toLocaleString();
-}
+import dynamic from "next/dynamic";
+const Track = dynamic(() => import("../components/track"), { ssr: false });
+
 export default function Home(props) {
   console.log(props);
   return (
@@ -18,11 +16,10 @@ export default function Home(props) {
       </Head>
 
       <main className={styles.main}>
-        {props.talks.map((item, index) => (
-          <div key={index}>
-            {getDate(item.isoDate)} - {item.title}
-          </div>
-        ))}
+        <Track day="17" track="Summit Track" talks={props.talks} />
+        <Track day="17" track="Base Camp Track" talks={props.talks} />
+        <Track day="21" track="Summit Track" talks={props.talks} />
+        <Track day="21" track="Base Camp Track" talks={props.talks} />
       </main>
     </div>
   );
