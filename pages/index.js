@@ -18,8 +18,18 @@ export default function Home(props) {
       <main className={styles.main}>
         <Track day="17" track="Summit Track" talks={props.talks} />
         <Track day="17" track="Base Camp Track" talks={props.talks} />
-        <Track day="21" track="Summit Track" talks={props.talks} />
-        <Track day="21" track="Base Camp Track" talks={props.talks} />
+        <Track
+          day="21"
+          track="Summit Track"
+          startTime="13:00"
+          talks={props.talks}
+        />
+        <Track
+          day="21"
+          track="Base Camp Track"
+          startTime="13:00"
+          talks={props.talks}
+        />
       </main>
     </div>
   );

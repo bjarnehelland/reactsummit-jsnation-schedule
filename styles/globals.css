@@ -14,3 +14,14 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.talk-container {
+  margin: 2px;
+}
+.talk {
+}
+
+.hour {
+  border-top: 1px solid #eaeaea;
+  color: #eaeaea;
+}
