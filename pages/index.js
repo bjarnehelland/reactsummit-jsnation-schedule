@@ -1,15 +1,9 @@
-/* This example requires Tailwind CSS v2.0+ */
 import { Fragment, useState, useRef } from "react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DotsHorizontalIcon,
-} from "@heroicons/react/solid";
-import { Menu, Transition } from "@headlessui/react";
-import { getSchedule } from "../data/schedule";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/solid";
 import { add, differenceInHours, format, setMinutes } from "date-fns";
 import { nb } from "date-fns/locale";
+import { getSchedule } from "../data/schedule";
+import Head from "next/head";
 
 function positionEvent(startDate, talk) {
   return {
@@ -27,18 +21,22 @@ const daysMeta = {
   "2022-06-16T00:00:00.000Z": {
     event: "JS Nation",
     date: "16. juni 2022",
+    favicon: "https://jsnation.com/img/favicon.ico",
   },
   "2022-06-17T00:00:00.000Z": {
     event: "React Summit",
     date: "17. juni 2022",
+    favicon: "https://reactsummit.com/img/favicon.png",
   },
   "2022-06-20T00:00:00.000Z": {
     event: "JS Nation (remote)",
     date: "20. juni 2022",
+    favicon: "https://jsnation.com/img/favicon.ico",
   },
   "2022-06-21T00:00:00.000Z": {
     event: "React Summit (remote)",
     date: "21. juni 2022",
+    favicon: "https://reactsummit.com/img/favicon.png",
   },
 };
 
@@ -46,9 +44,9 @@ export default function Example({ talks }) {
   const container = useRef(null);
   const containerOffset = useRef(null);
   const days = Object.keys(talks);
-  const [day, setDay] = useState(days[0]);
-
-  const filteredTalks = talks[day].map((talk) => ({
+  const [day, setDay] = useState(() => days[0]);
+  const selectedDay = day || days[0];
+  const filteredTalks = talks[selectedDay].map((talk) => ({
     ...talk,
     date: new Date(talk.isoDate),
   }));
@@ -66,27 +64,56 @@ export default function Example({ talks }) {
 
   return (
     <div className="flex h-full flex-col">
+      <Head>
+        <title>{daysMeta[selectedDay].event}</title>
+        <link rel="shortcut icon" href={daysMeta[selectedDay].favicon}></link>
+      </Head>
       <header className="relative z-20 flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
         <div>
           <h1 className="text-lg font-semibold leading-6 text-gray-900">
-            {daysMeta[day].event}
+            {daysMeta[selectedDay].event}
           </h1>
-          <p className="mt-1 text-sm text-gray-500"> {daysMeta[day].date}</p>
+          <p className="mt-1 text-sm text-gray-500">
+            {" "}
+            {daysMeta[selectedDay].date}
+          </p>
         </div>
         <div className="flex items-center">
-          <div className="flex items-center rounded-md shadow-sm">
+          <div className="flex items-center rounded-md shadow-sm md:items-stretch">
+            <button
+              type="button"
+              disabled={selectedDay === days[0]}
+              onClick={() => setDay(days[days.indexOf(selectedDay) - 1])}
+              className="flex items-center justify-center rounded-l-md border border-r-0 border-gray-300 bg-white py-2 pl-3 pr-4 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:px-2 md:hover:bg-gray-50"
+            >
+              <span className="sr-only">Previous day</span>
+              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
             {days.map((d) => {
               return (
                 <button
                   key={d}
                   type="button"
                   onClick={() => setDay(d)}
-                  className="hidden border-t border-b border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:relative md:block"
+                  className={classNames(
+                    selectedDay === d && "bg-red-100 hover:bg-red-200",
+                    "hidden border-t border-b border-gray-300 bg-white px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 focus:relative md:block"
+                  )}
                 >
                   {format(new Date(d), "dd", { locale: nb })}
                 </button>
               );
             })}
+            <span className="relative -mx-px h-5 w-px bg-gray-300 md:hidden" />
+            <button
+              type="button"
+              disabled={selectedDay === days[days.length - 1]}
+              onClick={() => setDay(days[days.indexOf(selectedDay) + 1])}
+              className="flex items-center justify-center rounded-r-md border border-l-0 border-gray-300 bg-white py-2 pl-4 pr-3 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:px-2 md:hover:bg-gray-50"
+            >
+              <span className="sr-only">Next day</span>
+              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </header>
@@ -177,11 +204,6 @@ function Event({ talk }) {
       </p>
       <p className=" font-semibold text-blue-700">{talk.title}</p>
       <p className=" text-blue-700">{talk.name}</p>
-      {/* {talk.lightningTalks?.map((talk, index) => (
-        <p key={index} className=" text-blue-700">
-          {talk.title}
-        </p>
-      ))} */}
     </a>
   );
 }
