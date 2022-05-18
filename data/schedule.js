@@ -1,55 +1,6 @@
 import jsdom from "jsdom";
 
-export async function getSchedule() {
-  const result = await fetch("https://reactsummit.com/schedule-offline");
-  const txt = await result.text();
-
-  const dom = new jsdom.JSDOM(txt);
-  const talks = [...dom.window.document.querySelectorAll(".schedule__btn")]
-    .map((talk) => talk.getAttribute("onclick"))
-    .map(parseBtnStr)
-    .map(JSON.parse);
-
-  return talks;
-}
-
-export async function getScheduleOld() {
-  const result = await fetch("https://reactsummit.com/schedule-offline");
-  const txt = await result.text();
-
-  const dom = new jsdom.JSDOM(txt);
-  const data = combine(
-    [...dom.window.document.querySelectorAll("script")]
-      .map((s) => s.textContent)
-      .filter((t) => t.includes("eventsBus.pushContent"))
-      .map(parseStr)
-  );
-
-  const talks = data.speakers.main.flatMap(({ activities, ...speaker }) =>
-    [...(activities.offlineTalks || []), ...(activities.talks || [])].map(
-      (talk) => {
-        return {
-          ...talk,
-          speaker,
-        };
-      }
-    )
-  );
-
-  const tracks = talks.reduce((acc, talk) => {
-    const track =
-      talk.track.name +
-      (talk.timeString ? new Date(talk.timeString).getDate() : "");
-
-    if (!acc[track]) {
-      acc[track] = [];
-    }
-    acc[track].push(talk);
-    return acc;
-  }, {});
-
-  return { tracks, data };
-}
+const ignoreTalks = ["break-before-the-party"];
 
 function parseBtnStr(str) {
   const start = "data:";
@@ -66,35 +17,42 @@ function parseBtnStr(str) {
   return body;
 }
 
-function combine(arr) {
-  return arr.reduce((acc, value) => {
-    return {
-      ...acc,
-      ...value,
-    };
-  }, {});
+async function getScheduleByUrl(url) {
+  const result = await fetch(url);
+  const txt = await result.text();
+
+  const dom = new jsdom.JSDOM(txt);
+  const talks = [...dom.window.document.querySelectorAll(".schedule__btn")]
+    .map((talk) => talk.getAttribute("onclick"))
+    .map(parseBtnStr)
+    .map(JSON.parse)
+    .filter((talk) => ignoreTalks.includes(talk.slug) === false)
+    .reduce((talks, talk) => {
+      console.log(talk);
+      if (talk.eventType === "QA") {
+        talks[talks.length - 1].duration += talk.duration;
+        return talks;
+      }
+      return [...talks, talk];
+    }, []);
+
+  return talks;
 }
 
-function parseStr(str) {
-  const start = ":";
-  const end = "})";
+export async function getSchedule() {
+  const jsnation = await getScheduleByUrl(
+    "https://jsnation.com/schedule-offline"
+  );
+  const reactsummit = await getScheduleByUrl(
+    "https://reactsummit.com/schedule-offline"
+  );
 
-  const propEnd = str.indexOf(":");
-  const propStart = str.lastIndexOf(" ", propEnd) + 1;
-  const prop = str.substring(propStart, propEnd).trim();
+  const allTalks = [...jsnation, ...reactsummit];
+  allTalks.sort((a, b) => new Date(a.isoDate) - new Date(b.isoDate));
 
-  const bodyStart = str.indexOf(start) + start.length;
-  const bodyEnd = str.lastIndexOf(end);
-
-  const body = str.substring(bodyStart, bodyEnd).trim();
-
-  if (!body) {
-    return {
-      [prop]: {},
-    };
-  }
-
-  return {
-    [prop]: JSON.parse(body),
-  };
+  return allTalks.reduce((talks, talk) => {
+    if (!talks[talk.dayISO]) talks[talk.dayISO] = [];
+    talks[talk.dayISO].push(talk);
+    return talks;
+  }, {});
 }
