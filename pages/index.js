@@ -4,6 +4,7 @@ import { add, differenceInHours, format, setMinutes } from "date-fns";
 import { nb } from "date-fns/locale";
 import { getSchedule } from "../data/schedule";
 import Head from "next/head";
+import { TalkDetails } from "../components/Dialog";
 
 function positionEvent(startDate, talk) {
   return {
@@ -41,6 +42,8 @@ const daysMeta = {
 };
 
 export default function Example({ talks }) {
+  const [open, setOpen] = useState(false);
+  const [selectedTalk, setSelectedTalk] = useState(null);
   const container = useRef(null);
   const containerOffset = useRef(null);
   const days = Object.keys(talks);
@@ -161,7 +164,13 @@ export default function Example({ talks }) {
                       {talk.eventType === "OrgEvent" ? (
                         <OrgEvent talk={talk} />
                       ) : (
-                        <Event talk={talk} />
+                        <Event
+                          talk={talk}
+                          onClick={() => {
+                            setSelectedTalk(talk);
+                            setOpen(true);
+                          }}
+                        />
                       )}
                     </li>
                   );
@@ -171,6 +180,7 @@ export default function Example({ talks }) {
           </div>
         </div>
       </div>
+      <TalkDetails open={open} setOpen={setOpen} talk={selectedTalk} />
     </div>
   );
 }
@@ -191,10 +201,10 @@ function OrgEvent({ talk }) {
   );
 }
 
-function Event({ talk }) {
+function Event({ talk, onClick }) {
   return (
-    <a
-      href="#"
+    <button
+      onClick={onClick}
       className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
     >
       <p className="text-blue-500 group-hover:text-blue-700">
@@ -204,7 +214,7 @@ function Event({ talk }) {
       </p>
       <p className=" font-semibold text-blue-700">{talk.title}</p>
       <p className=" text-blue-700">{talk.name}</p>
-    </a>
+    </button>
   );
 }
 
