@@ -50,11 +50,22 @@ export function TalkDetails({ open, setOpen, talk }) {
                     >
                       {talk?.title}
                     </Dialog.Title>
-                    <div className="mt-2">
+                    <div className="mt-2 text-left">
                       <div
                         className="text-sm text-gray-500"
                         dangerouslySetInnerHTML={{ __html: talk?.description }}
                       ></div>
+                      {talk.lightningTalks?.map((lightningTalk) => (
+                        <div key={lightningTalk.id}>
+                          <div className="mt-2">{lightningTalk.title}</div>
+                          <div
+                            className="text-sm text-gray-500 "
+                            dangerouslySetInnerHTML={{
+                              __html: lightningTalk?.text,
+                            }}
+                          ></div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>

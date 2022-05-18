@@ -65,6 +65,11 @@ export default function Example({ talks }) {
 
   const minutes = hours.length * 12;
 
+  const handleTalkDetails = (talk) => {
+    setSelectedTalk(talk);
+    setOpen(true);
+  };
+
   return (
     <div className="flex h-full flex-col">
       <Head>
@@ -162,14 +167,14 @@ export default function Example({ talks }) {
                       style={positionEvent(firstDate, talk)}
                     >
                       {talk.eventType === "OrgEvent" ? (
-                        <OrgEvent talk={talk} />
+                        <OrgEvent
+                          talk={talk}
+                          onClick={() => handleTalkDetails(talk)}
+                        />
                       ) : (
                         <Event
                           talk={talk}
-                          onClick={() => {
-                            setSelectedTalk(talk);
-                            setOpen(true);
-                          }}
+                          onClick={() => handleTalkDetails(talk)}
                         />
                       )}
                     </li>
@@ -185,11 +190,11 @@ export default function Example({ talks }) {
   );
 }
 
-function OrgEvent({ talk }) {
+function OrgEvent({ talk, onClick }) {
   return (
-    <a
-      href="#"
-      className="group absolute inset-1 flex flex-row gap-1 overflow-y-auto rounded-lg bg-green-50 p-2 text-xs leading-5 hover:bg-green-100"
+    <button
+      onClick={onClick}
+      className="group absolute inset-1 flex flex-row text-left gap-1 overflow-y-auto rounded-lg bg-green-50 p-2 text-xs leading-5 hover:bg-green-100"
     >
       <p className="order-1 font-semibold text-green-700">{talk.title}</p>
       <p className="text-green-500 group-hover:text-green-700">
@@ -197,7 +202,7 @@ function OrgEvent({ talk }) {
           {format(talk.date, "p", { locale: nb })}
         </time>
       </p>
-    </a>
+    </button>
   );
 }
 
@@ -205,15 +210,15 @@ function Event({ talk, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+      className="group absolute inset-1 flex flex-col text-left rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
     >
       <p className="text-blue-500 group-hover:text-blue-700">
         <time dateTime={talk.date.toISOString()}>
           {format(talk.date, "p", { locale: nb })}
         </time>
       </p>
-      <p className=" font-semibold text-blue-700">{talk.title}</p>
-      <p className=" text-blue-700">{talk.name}</p>
+      <p className="font-semibold text-blue-700">{talk.title}</p>
+      <p className="text-blue-700">{talk.name}</p>
     </button>
   );
 }
