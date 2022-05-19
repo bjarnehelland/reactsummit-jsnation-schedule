@@ -1,6 +1,6 @@
 import jsdom from "jsdom";
 
-const ignoreTalks = ["break-before-the-party"];
+const ignoreTalks = ["break-before-the-party", "coffee-break", "break"];
 
 function parseBtnStr(str) {
   const start = "data:";

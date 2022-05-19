@@ -54,6 +54,8 @@ export default function Example({ talks }) {
     date: new Date(talk.isoDate),
   }));
 
+  console.log(filteredTalks);
+
   const firstDate = setMinutes(filteredTalks[0].date, 0);
   const lastEvent = filteredTalks[filteredTalks.length - 1];
   const lastDate = add(lastEvent.date, { minutes: lastEvent.duration });
@@ -166,17 +168,10 @@ export default function Example({ talks }) {
                       className="relative mt-px flex"
                       style={positionEvent(firstDate, talk)}
                     >
-                      {talk.eventType === "OrgEvent" ? (
-                        <OrgEvent
-                          talk={talk}
-                          onClick={() => handleTalkDetails(talk)}
-                        />
-                      ) : (
-                        <Event
-                          talk={talk}
-                          onClick={() => handleTalkDetails(talk)}
-                        />
-                      )}
+                      <Event
+                        talk={talk}
+                        onClick={() => handleTalkDetails(talk)}
+                      />
                     </li>
                   );
                 })}
@@ -190,35 +185,44 @@ export default function Example({ talks }) {
   );
 }
 
-function OrgEvent({ talk, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group absolute inset-1 flex flex-row text-left gap-1 overflow-y-auto rounded-lg bg-green-50 p-2 text-xs leading-5 hover:bg-green-100"
-    >
-      <p className="order-1 font-semibold text-green-700">{talk.title}</p>
-      <p className="text-green-500 group-hover:text-green-700">
-        <time dateTime={talk.date.toISOString()}>
-          {format(talk.date, "p", { locale: nb })}
-        </time>
-      </p>
-    </button>
-  );
-}
-
 function Event({ talk, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group absolute inset-1 flex flex-col text-left rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+      className={classNames(
+        talk.eventType === "OrgEvent"
+          ? "bg-green-50 hover:bg-green-100"
+          : "bg-blue-50 hover:bg-blue-100",
+        talk.duration > 10 ? "flex-col" : "flex-row gap-1",
+        "group absolute inset-1 flex text-left overflow-hidden rounded-lg  p-2 text-xs leading-5"
+      )}
     >
-      <p className="text-blue-500 group-hover:text-blue-700">
+      <p
+        className={classNames(
+          talk.eventType === "OrgEvent"
+            ? "text-green-500 group-hover:text-green-700"
+            : "text-blue-500 group-hover:text-blue-700"
+        )}
+      >
         <time dateTime={talk.date.toISOString()}>
           {format(talk.date, "p", { locale: nb })}
         </time>
       </p>
-      <p className="font-semibold text-blue-700">{talk.title}</p>
-      <p className="text-blue-700">{talk.name}</p>
+      <p
+        className={classNames(
+          talk.eventType === "OrgEvent" ? "text-green-700" : "text-blue-700",
+          "font-semibold"
+        )}
+      >
+        {talk.title}
+      </p>
+      <p
+        className={classNames(
+          talk.eventType === "OrgEvent" ? "text-green-700" : "text-blue-700"
+        )}
+      >
+        {talk.name}
+      </p>
     </button>
   );
 }
