@@ -28,7 +28,6 @@ async function getScheduleByUrl(url) {
     .map(JSON.parse)
     .filter((talk) => ignoreTalks.includes(talk.slug) === false)
     .reduce((talks, talk) => {
-      console.log(talk);
       if (talk.eventType === "QA") {
         talks[talks.length - 1].duration += talk.duration;
         return talks;

@@ -7,7 +7,6 @@ function getDate(isoDate) {
 }
 
 function minutesBetween(startDate, currentDate) {
-  console.log(startDate, currentDate);
   return (currentDate - startDate) / 60000;
 }
 
@@ -38,7 +37,6 @@ export default function Track({
   const endISO = getIsoDate(day, endTime);
 
   const array = getHours(startISO, endISO);
-  console.log(talks);
 
   const dayISO = new Date(`2022-06-${day}`).toISOString();
   const totalHeight = 1600;

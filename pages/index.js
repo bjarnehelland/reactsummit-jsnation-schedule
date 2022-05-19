@@ -54,8 +54,6 @@ export default function Example({ talks }) {
     date: new Date(talk.isoDate),
   }));
 
-  console.log(filteredTalks);
-
   const firstDate = setMinutes(filteredTalks[0].date, 0);
   const lastEvent = filteredTalks[filteredTalks.length - 1];
   const lastDate = add(lastEvent.date, { minutes: lastEvent.duration });
