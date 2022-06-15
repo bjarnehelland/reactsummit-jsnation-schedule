@@ -1,8 +1,18 @@
 import jsdom from "jsdom";
+import { daysMeta } from "./daysMeta";
+
+export interface Talk {
+  slug: string;
+  eventType: string;
+  duration: number;
+  isoDate: string;
+  dayISO: string;
+  track: string;
+}
 
 const ignoreTalks = ["break-before-the-party", "coffee-break", "break"];
 
-function parseBtnStr(str) {
+function parseBtnStr(str: string) {
   const start = "data:";
   const end = "})";
 
@@ -17,7 +27,12 @@ function parseBtnStr(str) {
   return body;
 }
 
-async function getScheduleByUrl(url) {
+export async function getSchedule(day: string) {
+  if (!daysMeta[day]) {
+    throw new Error(`Unknown day: ${day}`);
+  }
+  const dayMeta = daysMeta[day];
+  const url = dayMeta.url;
   const result = await fetch(url);
   const txt = await result.text();
 
@@ -25,33 +40,20 @@ async function getScheduleByUrl(url) {
   const talks = [...dom.window.document.querySelectorAll(".schedule__btn")]
     .map((talk) => talk.getAttribute("onclick"))
     .map(parseBtnStr)
-    .map(JSON.parse)
+    .map<Talk>((talk) => JSON.parse(talk))
+    .filter((talk) => talk.dayISO === dayMeta.dayISO)
     .filter((talk) => ignoreTalks.includes(talk.slug) === false)
-    .reduce((talks, talk) => {
+    .filter((talk) => talk.track !== "Speaker QnA Rooms")
+    .reduce<Talk[]>((talks, talk) => {
       if (talk.eventType === "QA") {
         talks[talks.length - 1].duration += talk.duration;
         return talks;
       }
       return [...talks, talk];
     }, []);
+  talks.sort((a, b) =>
+    a.isoDate < b.isoDate ? -1 : a.isoDate > b.isoDate ? 1 : 0
+  );
 
   return talks;
-}
-
-export async function getSchedule() {
-  const jsnation = await getScheduleByUrl(
-    "https://jsnation.com/schedule-offline"
-  );
-  const reactsummit = await getScheduleByUrl(
-    "https://reactsummit.com/schedule-offline"
-  );
-
-  const allTalks = [...jsnation, ...reactsummit];
-  allTalks.sort((a, b) => new Date(a.isoDate) - new Date(b.isoDate));
-
-  return allTalks.reduce((talks, talk) => {
-    if (!talks[talk.dayISO]) talks[talk.dayISO] = [];
-    talks[talk.dayISO].push(talk);
-    return talks;
-  }, {});
 }
